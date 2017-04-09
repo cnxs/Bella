@@ -13,36 +13,38 @@ Bella is a robust, `pure python` post-exploitation data mining tool & remote adm
 4. `Reverse VNC Connection.`
 	
 5. `Stream and save the computer's microphone input.`
+
+6. `Webcam photo capture.`
 	
-6. `Login / keychain password phishing through system prompt.`
+7. `Login / keychain password phishing through system prompt.`
 	
-7. `Apple ID password phishing through iTunes prompt.`
+8. `Apple ID password phishing through iTunes prompt.`
 	
-8. `iCloud Token Extraction.`
+9. `iCloud Token Extraction.`
 	
-9. `Accessing all iCloud services of the user through extracted tokens or passwords.`
+10. `Accessing all iCloud services of the user through extracted tokens or passwords.`
 	
 	`This includes: iCloud Contacts, Find my iPhone, Find my Friends, iOS Backups.`
 	
-10. `Google Chrome Password Extraction.`
+11. `Google Chrome Password Extraction.`
 
-11. `Chrome and Safari History Extraction.`
+12. `Chrome and Safari History Extraction.`
 
-12. `Auto Keychain decryption upon discovery of kc password.`
+13. `Auto Keychain decryption upon discovery of kc password.`
 
-13. `macOS Chat History.`
+14. `macOS Chat History.`
 
-14. `iTunes iOS Backup enumeration.`
+15. `iTunes iOS Backup enumeration.`
 
-15. `Extensive logging of all Bella activity and downloaded files.`
+16. `Extensive logging of all Bella activity and downloaded files.`
 
-16. `VERY comprehensive data storage.` All information that Bella discovers [tokens, passwords, etc] is stored in an encrypted SQL database on the computer running Bella. This information is used for faster function execution, and a "smarter" reverse shell.
+17. `VERY comprehensive data storage.` All information that Bella discovers [tokens, passwords, etc] is stored in an encrypted SQL database on the computer running Bella. This information is used for faster function execution, and a "smarter" reverse shell.
 	
-17. `Complete remote removal of Bella`
+18. `Complete remote removal of Bella.`
 
-18. `An interactive shell for commands such as nano, ftp, telnet, etc.`
+19. `An interactive shell for commands such as nano, ftp, telnet, etc.`
 
-19. `A lot of other great features!` Mess around with it to see it in action.
+20. `A lot of other great features!` Mess around with it to see it in action.
 
 
 These are some of the features available when we are in the userland. This shell is accessible at any time when the user has an internet connection, which occurs when they are logged in and the computer is not asleep. 
@@ -129,9 +131,11 @@ Please let me know if you have any issues.
 
 2. `Firefox password decryption / extraction`
 
-3. `Keystroke logging with legible output [80% done]`
+3. `Keystroke logging with legible output [80% done].`
 
 4. `VNC and Microphone functionality for a Linux Control Center`
+
+5. `Webcam video capture`
 
 #### Some design points
 1. 	As previously stated, Bella is a pseudo-TTY. By this, the base socket and remote code execution handling of Bella is a fairly abstracted version of a very simple request-response socket. Bella receives a command from the server. If the command matches a pre-programmed function (i.e chrome history dump), then it will perform that function, and send the response back to the client. The client will then handle the response in the same way. After processing the response, it will prompt the client for another command to send.

